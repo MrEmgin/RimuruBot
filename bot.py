@@ -49,4 +49,4 @@ async def predict(ctx, *que):
         await ctx.send(choice(predictions))
 
 
-bot.run('Njc3MDg1MTM4NzUxODQ4NDY5.XkQ7rA.peuMBn4hQ5oD6Jt-q23_jKq5iGc')
+bot.run('token')
