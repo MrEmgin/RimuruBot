@@ -1,5 +1,3 @@
-import discord
-from discord.ext import commands
 import time
 import http.cookiejar as cookielib
 import urllib.request
@@ -7,11 +5,9 @@ import re
 import base64
 from PIL import Image
 from random import choice, randint, shuffle
-import os
-import shutil
 
 
-async def search_by_url(image_path):
+def search(image_path):
     cj = cookielib.CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
     headers = [[('User-agent',
@@ -75,76 +71,7 @@ async def search_by_url(image_path):
             file.write(base64.decodebytes(str.encode(coded_string) + b'=='))
 
         ratio = 2.
-        image = Image.open(path).convert('RGB')
+        image = Image.open(path)
         w, h = image.size
         image = image.resize((int(w * ratio), int(h * ratio)))
         image.save(path)
-
-
-predictions = ['It is certain', 'It is decidedly so', 'Without a doubt', 'Yes — definitely', 'You may rely on it',
-               'As I see it, yes', 'Most likely', 'Outlook good', 'Signs point to yes', 'Yes', 'Reply hazy, try again',
-               'Ask again later', 'Better not tell you now', 'Cannot predict now', 'Concentrate and ask again',
-               'Don’t count on it', 'My reply is no', 'My sources say no', 'Outlook not so good', 'Very doubtful']
-shuffle(predictions)
-questions = []
-bot = commands.Bot(command_prefix='>')
-
-
-@bot.event
-async def on_ready():
-    print(f'log in')
-
-
-@bot.command()
-async def ping(ctx):
-    await ctx.send('pong')
-
-
-@bot.command()
-async def h(ctx):
-    await ctx.send(
-        "```Welcome! I'm Discord bot and I'm very glad to see you!\n Here are some usefil commands:\n>help - it's clear I suppose\n>ping - to check bot activity\n>new voice [or 'text'] <name> - to create new channel automatically\n>predict <question> - to get a prediction on early question```")
-
-
-@bot.command()
-async def new(ctx, type, *name):
-    name = '-'.join(name)
-    if type == 'voice':
-        chan_2 = await ctx.guild.create_voice_channel(name=name)
-    elif type == 'text':
-        chan = await ctx.guild.create_text_channel(name=name)
-    else:
-        await ctx.send("Invalid command (or you're) Use !help")
-        return
-    await ctx.send('New channel was created. Check it out now!')
-
-
-@bot.command()
-async def predict(ctx, *que):
-    global questions
-    req = ' '.join(que)
-    if req in questions:
-        await ctx.send("You're too annoying with your silly question!!!")
-    else:
-        questions.append(req)
-        await ctx.send(choice(predictions))
-
-
-@bot.command()
-async def search(ctx, req):
-    print(req)
-    if '://' in req:
-        await search_by_url(req)
-        files = os.listdir('./data')
-        ctx.send("Here are some similar images...")
-        for i in range(3):
-            path = choice(files)
-            print(path)
-            await ctx.message.channel.send(file=discord.File('data/' + path))
-        shutil.rmtree('./data')
-        os.mkdir('data')
-    else:
-        ctx.send("Unfortunately, I can't find such image...")
-
-
-bot.run('token')
