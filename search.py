@@ -57,6 +57,14 @@ def search_by_url(image_path, num=3):
     with open('test.html', mode='wb') as f:
         f.write(source)
     obj = re.findall(r'<input class="gLFyf gsfi".*? value="(.*?)".*?>', source.decode('utf-8'))
+    #obj_colloc = re.findall('<span class="st">.*?<em>(.*?)</em>.*?</span>', source.decode('utf-8'))
+    obj_colloc = re.findall('<h3 class="LC20lb DKV0Md">(.*?)</h3>', source.decode('utf-8'))
+    obj_words = []
+    for colloc in obj_colloc:
+        obj_words.extend(colloc.strip().lower().split())
+    obj_words = list(filter(lambda x: len(x) > 2 and x.isalpha(), obj_words))
+    word_res = sorted([(obj_words.count(word), word) for word in obj_words], reverse=True)
+    possible_obj = word_res[0][1]
     if not obj:
         obj = 'a random object'
     else:
@@ -68,8 +76,8 @@ def search_by_url(image_path, num=3):
             content = opener.open(url).read()
             with open('test.html', mode='wb') as f:
                 f.write(content)
-            image_urls = re.findall('<img class=".*?" src=".*?" .*? data-iurl="(.*?)" .*? />', content.decode('utf-8'))[
-                         1:]
+            image_urls = re.findall('<img .*?data-iurl="(.*?)" .*? />', content.decode('utf-8')[251599:])[1:]
+            second = average_color('data/default.jpg')
             for i in range(num):
                 t = list(str(int(time.time())) + str(randint(1000, 90000)))
                 shuffle(t)
@@ -82,7 +90,6 @@ def search_by_url(image_path, num=3):
                 with open(path, 'wb') as file:
                     file.write(content)
                 first = average_color(path)
-                second = average_color('data/default.jpg')
                 delt = 30
                 if abs(first[0] - second[0]) > delt or abs(first[1] - second[1]) > delt or abs(
                         first[2] - second[2]) > delt:
@@ -122,7 +129,8 @@ def search_by_url(image_path, num=3):
             print('\n', e, '\n')
         finally:
             os.remove('data/default.jpg')
-    return obj
+    return obj, possible_obj
 
 
-print(search_by_url('https://avatars.mds.yandex.net/get-zen_doc/1578609/pub_5d6fbf6b9515ee00add86255_5d6fc3878f011100aeae2ce7/scale_1200', 10))
+print(search_by_url('https://avatars.mds.yandex.net/get-pdb/231404/7723056e-1a65-4325-b324-71a46289ef78/s1200?webp=false', 3))
+
